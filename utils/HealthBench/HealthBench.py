@@ -26,13 +26,14 @@ class HealthBench(BaseDataset):
     def __init__(self,model,dataset_path,output_path):
         self.model = model
         self.output_path = output_path
-        self.dataset_path = dataset_path
+        self.dataset_path = dataset_path if dataset_path is not None else './datas/HealthBench'
         self.samples = []
         self.chunk_idx = int(os.environ.get("chunk_idx",0))
         self.num_chunks = int(os.environ.get("num_chunks",1))
 
     
     def load_data(self):
+        self.maybe_download_dataset()
         dataset_path = self.dataset_path
         dataset = []
         consensus_path = os.path.join(dataset_path,"consensus_2025-05-09-20-00-46.jsonl")
@@ -170,5 +171,13 @@ class HealthBench(BaseDataset):
         metrics = _aggregate_get_clipped_mean(out_samples)
 
         return metrics,out_samples
+    
+    def maybe_download_dataset(self):
+        if not os.path.exists(self.dataset_path):
+            if self.chunk_idx!=0:
+                raise ValueError("Chunk inference is not support for download. Try to run eval.sh insteal of eval_chunked.sh")
+            self._download_file_local(local_path=self.dataset_path,url='https://openaipublic.blob.core.windows.net/simple-evals/healthbench/2025-05-07-06-14-12_oss_eval.jsonl')
+            self._download_file_local(local_path=self.dataset_path,url='https://openaipublic.blob.core.windows.net/simple-evals/healthbench/hard_2025-05-08-21-00-10.jsonl')
+            self._download_file_local(local_path=self.dataset_path,url='https://openaipublic.blob.core.windows.net/simple-evals/healthbench/consensus_2025-05-09-20-00-46.jsonl')
 
                 

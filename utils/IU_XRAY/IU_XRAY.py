@@ -20,12 +20,13 @@ class IU_XRAY(BaseDataset):
     def __init__(self,model,dataset_path,output_path):
         self.model = model
         self.output_path = output_path
-        self.dataset_path = dataset_path
+        self.dataset_path = dataset_path if dataset_path is not None else './datas/IU_XRAY'
         self.samples = []
         self.chunk_idx = int(os.environ.get("chunk_idx",0))
         self.num_chunks = int(os.environ.get("num_chunks",1))
     
     def load_data(self):
+        self.maybe_download_dataset()
         dataset_path = self.dataset_path
         json_path = os.path.join(dataset_path,"test.json")
 
@@ -97,5 +98,17 @@ class IU_XRAY(BaseDataset):
         ground_truth_df.to_csv(ground_truth_path, index=False)
 
         return {"total metrics":"please use cal_report_metrics.py to generate metrics"},out_samples
+    
+    def maybe_download_dataset(self):
+        img_path = os.path.join(self.dataset_path, "images")
+        if not os.path.exists(img_path):
+            if self.chunk_idx!=0:
+                raise ValueError("Chunk inference is not support for download. Try to run eval.sh insteal of eval_chunked.sh")
+
+            print("Start downloading the IU_XRAY dataset...")
+            url="https://openi.nlm.nih.gov/imgs/collections/NLMCXR_png.tgz"
+            self._download_file_local(local_path=self.dataset_path,url=url)
+            self._unzip_img_zip_local(local_path=self.dataset_path,zip_filename="images.zip")
+            print("Download and extraction completed successfully")
 
                 
