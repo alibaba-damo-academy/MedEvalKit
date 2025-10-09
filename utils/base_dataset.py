@@ -95,12 +95,9 @@ class BaseDataset:
           raise ValueError("num_chunks must be greater than 0")
   
   def _download_file_local(self,local_path,url):
+        # download the specific file to local_path
         
         os.makedirs(local_path,exist_ok=True)
-
-
-        # download the zip file and unzip it into the local_path
-
         
         # Extract filename from URL
         filename = url.split("/")[-1]
