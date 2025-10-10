@@ -18,15 +18,26 @@ class MedXpertQA(BaseDataset):
         self.split = split
         self.model = model
         self.output_path = output_path
-        self.dataset_path = dataset_path if dataset_path else "TsinghuaC3I/MedXpertQA"
+        self.dataset_path = dataset_path  
         self.samples = []
         self.chunk_idx = int(os.environ.get("chunk_idx",0))
         self.num_chunks = int(os.environ.get("num_chunks",1))
+
+        
+        if self.dataset_path is None:
+            # dataset_path not provided by users, then download to './datas/MedXpertQA'
+            self.hf_path = "TsinghuaC3I/MedXpertQA"
+            self.dataset_path = "./datas/MedXpertQA"
+        else:
+            # dataset_path provided by users, use the provided path directly
+            self.hf_path = self.dataset_path
+
+        
     
 
     def load_data(self):
-        dataset_path = self.dataset_path
-        dataset = load_dataset(dataset_path,self.split)["test"]
+        dataset = load_dataset(self.hf_path,self.split,cache_dir=self.dataset_path)["test"]
+        self.maybe_download_dataset()
         for idx,sample in tqdm(enumerate(dataset)):
             if idx % self.num_chunks == self.chunk_idx:
                 sample = self.construct_messages(sample)
@@ -100,6 +111,21 @@ class MedXpertQA(BaseDataset):
         
         metrics = {"total metrics":metrics,"question type metrics":question_type_metrics,"task type metrics":task_type_metrics}
         return metrics,out_samples
+    
+    def maybe_download_dataset(self):
+        if not os.path.exists(self.dataset_path):
+            if self.chunk_idx!=0:
+                raise ValueError("Chunk inference is not support for download. Try to run eval.sh insteal of eval_chunked.sh")
+            img_path = os.path.join(self.dataset_path, "images")
+            if len(os.listdir(img_path)) == 0:
+                print("Start downloading the MedXpertQA dataset...")
+                url="https://huggingface.co/datasets/TsinghuaC3I/MedXpertQA/resolve/main/images.zip"
+                self._download_file_local(local_path=self.dataset_path,url=url)
+                self._unzip_img_zip_local(local_path=self.dataset_path,zip_filename="images.zip")
+                print("Download and extraction completed successfully")
+
+    
+        
 
 
                 

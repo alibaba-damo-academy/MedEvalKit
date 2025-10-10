@@ -25,8 +25,18 @@ class SLAKE(BaseDataset):
         self.chunk_idx = int(os.environ.get("chunk_idx",0))
         self.num_chunks = int(os.environ.get("num_chunks",1))
 
+
+        if self.dataset_path is None:
+            # dataset_path not provided by users, then download to './datas/MedXpertQA'
+            self.hf_path = "BoKelvin/SLAKE"
+            self.dataset_path = "./datas/SLAKE"
+        else:
+            # dataset_path provided by users, use the provided path directly
+            self.hf_path = self.dataset_path
+
     
     def load_data(self):
+        self.maybe_download_dataset()
         dataset_path = self.dataset_path
         dataset = []
         test_json_path = os.path.join(dataset_path,"test.json")
@@ -169,5 +179,16 @@ class SLAKE(BaseDataset):
 
         return metrics,out_samples
 
-
+    def maybe_download_dataset(self):
+        if not os.path.exists(self.dataset_path):
+            if self.chunk_idx!=0:
+                raise ValueError("Chunk inference is not support for download. Try to run eval.sh insteal of eval_chunked.sh")
+            from huggingface_hub import snapshot_download
+            import shutil
+            print("Start downloading the SLAKE dataset...")
+            snapshot_download(self.hf_path, local_dir=self.dataset_path,repo_type="dataset")
+            self._unzip_img_zip_local(local_path=self.dataset_path,zip_filename="imgs.zip")
+            self._unzip_img_zip_local(local_path=self.dataset_path,zip_filename="KG.zip")
+            shutil.rmtree(os.path.join(self.dataset_path,".cache"))
+            print("Download and extraction completed successfully")
                 

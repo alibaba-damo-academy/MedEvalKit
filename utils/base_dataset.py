@@ -93,3 +93,48 @@ class BaseDataset:
             return None
       else:
           raise ValueError("num_chunks must be greater than 0")
+  
+  def _download_file_local(self,local_path,url):
+        # download the specific file to local_path
+        
+        os.makedirs(local_path,exist_ok=True)
+        
+        # Extract filename from URL
+        filename = url.split("/")[-1]
+        file_path = os.path.join(local_path, filename)
+        
+        # Check if wget or curl is available
+        if os.system("which wget > /dev/null 2>&1") == 0:
+            download_cmd = f"wget {url} -O {file_path}"
+        elif os.system("which curl > /dev/null 2>&1") == 0:
+            download_cmd = f"curl -L {url} -o {file_path}"
+        else:
+            raise RuntimeError("Neither wget nor curl is available for downloading")
+
+        # Download with error handling
+        if os.system(download_cmd) != 0:
+            if os.path.exists(file_path):
+                os.remove(file_path)
+            raise RuntimeError("Failed to download dataset")
+        
+  def _unzip_img_zip_local(self, local_path, zip_filename):
+        # suppose zip_filename is like 'images.zip' or 'data.tgz'
+        zip_file_path = os.path.join(local_path, zip_filename)
+        
+        if zip_filename.endswith('.zip'):
+            if os.system(f"unzip -q {zip_file_path} -d {local_path}") != 0:
+                if os.path.exists(zip_file_path):
+                    os.remove(zip_file_path)
+                raise RuntimeError("Failed to extract dataset")
+        elif zip_filename.endswith('.tgz') or zip_filename.endswith('.tar.gz'):
+            if os.system(f"tar -xzf {zip_file_path} -C {local_path}") != 0:
+                if os.path.exists(zip_file_path):
+                    os.remove(zip_file_path)
+                raise RuntimeError("Failed to extract dataset")
+        else:
+            if os.path.exists(zip_file_path):
+                os.remove(zip_file_path)
+            raise RuntimeError(f"Unsupported file format: {zip_filename}")
+        
+        if os.path.exists(zip_file_path):
+            os.remove(zip_file_path)

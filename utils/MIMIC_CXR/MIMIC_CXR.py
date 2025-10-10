@@ -56,6 +56,7 @@ class MIMIC_CXR(BaseDataset):
 
     
     def load_data(self):
+        self.maybe_download_dataset()
         dataset_path = self.dataset_path
         json_path = os.path.join(dataset_path,"test.json")
 
@@ -126,6 +127,10 @@ class MIMIC_CXR(BaseDataset):
         ground_truth_df.to_csv(ground_truth_path, index=False)
 
         return {"total metrics":"please use cal_report_metrics.py to generate metrics"},out_samples
+    
+    def maybe_download_dataset(self):
+        if not os.path.exists(self.dataset_path):
+            raise ValueError(f"Dataset path {self.dataset_path} does not exist. Please download from https://physionet.org/content/mimic-cxr/2.1.0/ and put it under {self.dataset_path}.")
 
 
                 

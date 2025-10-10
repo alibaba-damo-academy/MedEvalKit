@@ -1,1 +1,8 @@
 *pyc
+datas/OmniMedVQA
+datas/PMC-VQA
+datas/SLAKE
+datas/MedXpertQA
+*.tgz
+*.zip
+
