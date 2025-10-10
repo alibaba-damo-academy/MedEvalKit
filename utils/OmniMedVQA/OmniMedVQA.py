@@ -17,7 +17,7 @@ class OmniMedVQA(BaseDataset):
     def __init__(self,model,dataset_path,output_path):
         self.model = model
         self.output_path = output_path
-        self.dataset_path = dataset_path
+        self.dataset_path = dataset_path if dataset_path is not None else './datas/OmniMedVQA'
         self.samples = []
         self.chunk_idx = int(os.environ.get("chunk_idx",0))
         self.num_chunks = int(os.environ.get("num_chunks",1))
@@ -67,6 +67,7 @@ class OmniMedVQA(BaseDataset):
 
 
     def load_data(self):
+        self.maybe_download_dataset()
         dataset_path = self.dataset_path
         datasets = []
         open_json_path = os.path.join(dataset_path,"QA_information","Open-access")
@@ -147,5 +148,16 @@ class OmniMedVQA(BaseDataset):
         
         metrics = {"total metrics":metrics,"question type metrics":question_type_metrics,"modality type metrics":modality_type_metrics}
         return metrics,out_samples
+    
+    def maybe_download_dataset(self):
+        if not os.path.exists(self.dataset_path):
+            if self.chunk_idx!=0:
+                raise ValueError("Chunk inference is not support for download. Try to run eval.sh insteal of eval_chunked.sh")
+            print("Start downloading the OmniMedVQA dataset...")
+            url="https://huggingface.co/datasets/foreverbeliever/OmniMedVQA/resolve/main/OmniMedVQA.zip"
+            self._download_file_local(local_path=self.dataset_path,url=url)
+            self._unzip_img_zip_local(local_path=os.path.dirname(self.dataset_path),zip_filename="OmniMedVQA.zip")
+            print("Download and extraction completed successfully")
+
 
                 
