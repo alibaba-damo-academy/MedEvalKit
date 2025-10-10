@@ -136,6 +136,12 @@ class MedFlamingo:
     def __new__(cls, model_path: str, args: Any) -> Any:
         from models.Med_Flamingo.Med_Flamingo_hf import Med_Flamingo
         return Med_Flamingo(model_path, args)
+    
+@LLMRegistry.register("GPT")
+class GPT:
+    def __new__(cls, model_path: str, args: Any) -> Any:
+        from models.GPT.GPT import openai_llm
+        return openai_llm(model_path, args)
 
 @LLMRegistry.register("MedDr")
 class MedDr:
