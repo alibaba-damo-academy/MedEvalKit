@@ -122,9 +122,7 @@ class VQA_RAD(BaseDataset):
 
 
         if os.environ.get("use_llm_judge","False") == "True":
-            metrics["total metrics"]["right"] = 0
             metrics["open"]["right"] = 0
-            metrics["close"]["right"] = 0
             llm = judger
             results = llm.generate_outputs(messages_list)
             for i,result in zip(open_id,results):

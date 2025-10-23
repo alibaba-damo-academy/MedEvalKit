@@ -118,7 +118,7 @@ class SLAKE(BaseDataset):
             answer_type = out_sample["answer_type"]
 
             if os.environ.get("use_llm_judge","False") == "True":
-                messages = get_compare_messages(question,response,answer,lang,answer_type)
+                messages = get_compare_messages(question,response,answer)
                 messages_list.append(messages)
                 langs.append(lang)
                 answer_types.append(answer_type)
@@ -150,9 +150,7 @@ class SLAKE(BaseDataset):
 
 
         if os.environ.get("use_llm_judge","False") == "True":
-            metrics["total metrics"]["right"] = 0
             metrics["open"]["right"] = 0
-            metrics["close"]["right"] = 0
             llm = judger
             results = llm.generate_outputs(messages_list)
             i = 0
