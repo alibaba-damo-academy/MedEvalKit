@@ -42,7 +42,7 @@ def run_model(samples, model,):
                 if sample["question_type"] == "multiple-choice":
                     pred_ans = parse_multi_choice_response(response,sample["all_choices"],sample["index2ans"])
                 else:
-                    pred_ans = response
+                    pred_ans = parse_open_response(response)
                 out_samples[sample['id']] = pred_ans    
                 out_response[sample['id']] = response  
     return out_samples,out_response
@@ -53,6 +53,10 @@ def eval_MMMU_test(model,dataset_path,output_path,subset):
     for subject in tqdm(DOMAIN_CAT2SUB_CAT[subset]):
         sub_dataset = load_dataset(dataset_path, subject, split="test")
         sub_dataset_list.append(sub_dataset)
+    
+    with open("utils/MMMU/answer.json", "r") as f:
+        gold_answers = json.load(f)
+    
 
     chunk_idx = int(os.environ.get("chunk_idx",0))
     num_chunks = int(os.environ.get("num_chunks",1))
@@ -70,7 +74,7 @@ def eval_MMMU_test(model,dataset_path,output_path,subset):
         out_samples,out_response = run_model(samples,model)
         save_json(results_path,out_samples)
         save_json(response_path,out_response)
-        return "please upload in https://eval.ai/web/challenges/challenge-page/2179/leaderboard to get the results"
+        return evaluate(out_samples,gold_answers)
 
     elif num_chunks > 1:
         results_path = os.path.join(output_path,f"results_{chunk_idx}.json")
@@ -93,9 +97,9 @@ def eval_MMMU_test(model,dataset_path,output_path,subset):
             with open(os.path.join(output_path,"results.json"),"w") as f:
                 json.dump(total_results,f)
                 
-            return "please upload in https://eval.ai/web/challenges/challenge-page/2179/leaderboard to get the results"
+            return evaluate(total_results,gold_answers)
         else:
-            return "please upload in https://eval.ai/web/challenges/challenge-page/2179/leaderboard to get the results"
+            return
     else:
         raise ValueError("num_chunks must be greater than 0")
 
