@@ -53,8 +53,8 @@ for IDX in $(seq 0 $((CHUNKS-1))); do
     --top_p "$TOP_P" \
     --repetition_penalty "$REPETITION_PENALTY" \
     --use_llm_judge "$USE_LLM_JUDGE" \
-    --judge_gpt_model "$JUDGE_GPT_MODEL" \
-    --openai_api_key "$OPENAI_API_KEY" \
+    --judge_model "$JUDGE_GPT_MODEL" \
+    --api_key "$OPENAI_API_KEY" \
     --test_times "$TEST_TIMES"  &  # 这里的反斜杠后面不要有空格
 done
 

@@ -207,8 +207,8 @@ python eval.py \
     --repetition_penalty "$REPETITION_PENALTY" \
     --reasoning "$REASONING" \
     --use_llm_judge "$USE_LLM_JUDGE" \
-    --judge_gpt_model "$GPT_MODEL" \
-    --openai_api_key "$OPENAI_API_KEY" \
+    --judge_model "$GPT_MODEL" \
+    --api_key "$OPENAI_API_KEY" \
     --test_times "$TEST_TIMES" 
 ```
 
